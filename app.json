@@ -1,26 +1,30 @@
 {
   "expo": {
-    "name": "sandhi-app",
+    "name": "SANDHI",
     "slug": "sandhi-app",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "sandhiapp",
+    "scheme": "sandhi",
     "userInterfaceStyle": "automatic",
+    "backgroundColor": "#141a2e",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "org.sandhiresearch.app",
+      "buildNumber": "1",
+      "supportsTablet": true
     },
     "android": {
+      "package": "org.sandhiresearch.app",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#141a2e",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -28,11 +32,12 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#141a2e",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 120
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

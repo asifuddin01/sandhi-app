@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { Font, useColors } from '@/constants/theme';
+import { SessionProvider } from '@/lib/session';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,6 +30,8 @@ const titles = {
   insights: 'Research notes',
   'insight/[slug]': 'Research note',
   search: 'Search',
+  'sign-in': 'Sign in',
+  me: 'Your account',
 };
 
 export default function RootLayout() {
@@ -64,18 +67,20 @@ export default function RootLayout() {
         },
       }}>
       <StatusBar style={light ? 'dark' : 'light'} />
-      <Stack
-        screenOptions={({ route }) => ({
-          title: titles[route.name as keyof typeof titles] ?? '',
-          headerStyle: { backgroundColor: colors.ink },
-          headerTintColor: colors.text,
-          headerTitleStyle: { fontFamily: Font.medium },
-          headerShadowVisible: false,
-          headerBackButtonDisplayMode: 'minimal',
-          contentStyle: { backgroundColor: colors.ink },
-        })}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'SANDHI' }} />
-      </Stack>
+      <SessionProvider>
+        <Stack
+          screenOptions={({ route }) => ({
+            title: titles[route.name as keyof typeof titles] ?? '',
+            headerStyle: { backgroundColor: colors.ink },
+            headerTintColor: colors.text,
+            headerTitleStyle: { fontFamily: Font.medium },
+            headerShadowVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
+            contentStyle: { backgroundColor: colors.ink },
+          })}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'SANDHI' }} />
+        </Stack>
+      </SessionProvider>
     </ThemeProvider>
   );
 }

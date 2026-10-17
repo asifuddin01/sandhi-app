@@ -18,15 +18,36 @@ const build =
 /** Names the app and its version, which the site uses for the update prompt. */
 const CLIENT = `sandhi-mobile/${version} (${Platform.OS}; build=${build})`;
 
-export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
+/**
+ * Every request the app makes. A token, when given, goes in the Authorization
+ * header and nowhere else — never in a URL, never in a log.
+ */
+export async function request<T>(
+  path: string,
+  options: {
+    method?: 'GET' | 'POST';
+    body?: unknown;
+    token?: string | null;
+    signal?: AbortSignal;
+  } = {},
+): Promise<T> {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'X-Sandhi-Client': CLIENT,
+  };
+  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (options.token) headers.Authorization = `Bearer ${options.token}`;
+
   let response: Response;
   try {
     response = await fetch(`${SITE_URL}/api/v1${path}`, {
-      headers: { Accept: 'application/json', 'X-Sandhi-Client': CLIENT },
-      signal,
+      method: options.method ?? 'GET',
+      headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      signal: options.signal,
     });
   } catch (error) {
-    if (signal?.aborted) throw error;
+    if (options.signal?.aborted) throw error;
     throw OFFLINE;
   }
   return readEnvelope<T>(response.status, await response.json().catch(() => null));
@@ -41,20 +62,21 @@ type Load<T> = {
 };
 
 /**
- * One read, with pull-to-refresh. `path` null waits (an empty search, say).
- * Loading is derived — the request that last settled is not the one wanted —
- * and the previous data stays on screen until the next arrives.
+ * One read, with pull-to-refresh. `path` null waits (an empty search, or no
+ * session yet). Loading is derived — the request that last settled is not the
+ * one wanted — and the previous data stays on screen until the next arrives.
+ * Member reads pass the session token; they live in memory only, never on disk.
  */
-export function useApi<T>(path: string | null): Load<T> {
+export function useApi<T>(path: string | null, token?: string | null): Load<T> {
   const [attempt, setAttempt] = useState(0);
   const [refreshAttempt, setRefreshAttempt] = useState(-1);
   const [settled, setSettled] = useState<{ key: string; data?: T; error?: ApiError }>();
-  const key = path === null ? null : `${attempt}:${path}`;
+  const key = path === null ? null : `${attempt}:${token ?? ''}:${path}`;
 
   useEffect(() => {
     if (key === null || path === null) return;
     const controller = new AbortController();
-    apiGet<T>(path, controller.signal).then(
+    request<T>(path, { token, signal: controller.signal }).then(
       (data) => setSettled({ key, data }),
       (reason: unknown) => {
         if (controller.signal.aborted) return;
@@ -66,7 +88,7 @@ export function useApi<T>(path: string | null): Load<T> {
       },
     );
     return () => controller.abort();
-  }, [key, path]);
+  }, [key, path, token]);
 
   const loading = key !== null && settled?.key !== key;
   const refresh = useCallback(() => {

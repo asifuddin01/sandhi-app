@@ -2,11 +2,21 @@ import Constants from 'expo-constants';
 
 import { Meta, Row, Screen, Section, Title } from '@/components/ui';
 import { SITE_URL } from '@/lib/api';
+import { useSession } from '@/lib/session';
 
 export default function MoreScreen() {
+  const { viewer, token } = useSession();
+
   return (
     <Screen top>
       <Title>More</Title>
+      <Section label="Members">
+        {token ? (
+          <Row href="/me" title="Your account" detail={viewer?.name} />
+        ) : (
+          <Row href="/sign-in" title="Sign in" detail="For SANDHI members." />
+        )}
+      </Section>
       <Section label="The lab">
         <Row href="/people" title="People" />
         <Row href="/news" title="News" />

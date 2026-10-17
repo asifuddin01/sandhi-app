@@ -1,20 +1,33 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Body, Empty, Heading, Label, Meta, Row, Screen, Section } from '@/components/ui';
 import { Font, Space, useColors } from '@/constants/theme';
 import { useApi } from '@/lib/api';
-import { date, label, names, publicationMeta } from '@/lib/format';
+import { labFeed, label, names, publicationMeta } from '@/lib/format';
+import { useSession } from '@/lib/session';
 import type { Home } from '@/lib/types';
 
 export default function HomeScreen() {
   const colors = useColors();
+  const { token } = useSession();
   const load = useApi<Home>('/home');
   const home = load.data;
+  const feed = home ? labFeed(home) : [];
 
   return (
     <Screen load={load} top>
       <View style={styles.hero}>
-        <Text style={[styles.mark, { color: colors.accent }]}>सन्धि</Text>
+        <View style={styles.topRow}>
+          <Text style={[styles.mark, { color: colors.accent }]}>सन्धि</Text>
+          <Link href={token ? '/me' : '/sign-in'} asChild>
+            <Pressable accessibilityRole="link" hitSlop={12}>
+              <Text style={[styles.account, { color: colors.link }]}>
+                {token ? 'Account' : 'Sign in'}
+              </Text>
+            </Pressable>
+          </Link>
+        </View>
         <Text style={[styles.title, { color: colors.text }]}>SANDHI{'\n'}Research Lab</Text>
         <Text style={[styles.tagline, { color: colors.text }]}>
           Where ideas meet, discovery begins.
@@ -79,19 +92,15 @@ export default function HomeScreen() {
         )}
       </Section>
 
-      {home?.news.length ? (
-        <Section label="News">
-          {home.news.map((post) => (
-            <Row
-              key={post.slug}
-              href={{ pathname: '/news/[slug]', params: { slug: post.slug } }}
-              title={post.title}
-              detail={post.excerpt}
-              meta={date(post.publishAt ?? post.createdAt)}
-            />
-          ))}
-        </Section>
-      ) : null}
+      <Section label="News and updates">
+        {feed.length ? (
+          feed.map((item) => (
+            <Row key={item.key} href={item.href} title={item.title} detail={item.detail} meta={item.meta} />
+          ))
+        ) : (
+          <Empty>News and project updates from the lab will appear here.</Empty>
+        )}
+      </Section>
 
       <View style={styles.footer}>
         <Heading>Join SANDHI</Heading>
@@ -103,9 +112,12 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { gap: Space.m, paddingTop: Space.l, paddingBottom: Space.m },
+  hero: { gap: Space.m, paddingBottom: Space.m },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   mark: { fontSize: 22 },
-  title: { fontFamily: Font.display, fontSize: 46, lineHeight: 52 },
+  account: { fontFamily: Font.medium, fontSize: 16 },
+  // Capitals only on the first line, so 1.14 × 46 is enough (see Font.display).
+  title: { fontFamily: Font.display, fontSize: 46, lineHeight: 53 },
   tagline: { fontFamily: Font.displayItalic, fontSize: 22, lineHeight: 30 },
   metrics: {
     flexDirection: 'row',

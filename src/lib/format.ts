@@ -1,4 +1,6 @@
-import type { PublicationSummary } from './types';
+import type { Href } from 'expo-router';
+
+import type { Home, PublicationSummary } from './types';
 
 /** ACTIVE → Active, CONFERENCE_PAPER → Conference paper. */
 export function label(value: string | null | undefined): string {
@@ -30,4 +32,35 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 
 export function date(iso: string | null | undefined): string {
   return iso ? dateFormat.format(new Date(iso)) : '';
+}
+
+export type FeedItem = {
+  key: string;
+  at: string;
+  href: Href;
+  title: string;
+  detail: string | null;
+  meta: string;
+};
+
+/** News posts and project updates as one list, newest first. */
+export function labFeed(home: Pick<Home, 'news' | 'updates'>): FeedItem[] {
+  return [
+    ...home.news.map((post) => ({
+      key: `news:${post.slug}`,
+      at: post.date,
+      href: { pathname: '/news/[slug]', params: { slug: post.slug } } as const,
+      title: post.title,
+      detail: null,
+      meta: [label(post.category), date(post.date)].filter(Boolean).join(' · '),
+    })),
+    ...home.updates.map((update) => ({
+      key: `update:${update.id}`,
+      at: update.postedAt,
+      href: { pathname: '/project/[slug]', params: { slug: update.project.slug } } as const,
+      title: update.title,
+      detail: update.summary,
+      meta: `${update.project.title} · ${date(update.postedAt)}`,
+    })),
+  ].sort((a, b) => b.at.localeCompare(a.at));
 }

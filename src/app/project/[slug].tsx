@@ -1,10 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { Body, Heading, Label, Prose, Row, Screen, Section, Title } from '@/components/ui';
-import { Space, useColors } from '@/constants/theme';
+import { Body, Heading, Label, Meta, Prose, Row, Screen, Section, Title } from '@/components/ui';
+import { Font, Space, useColors } from '@/constants/theme';
 import { useApi } from '@/lib/api';
-import { label, names, publicationMeta } from '@/lib/format';
+import { date, label, names, publicationMeta } from '@/lib/format';
 import type { ProjectDetail } from '@/lib/types';
 
 export default function ProjectScreen() {
@@ -31,6 +31,27 @@ export default function ProjectScreen() {
           <Part title="Why it matters" text={project.motivation} />
           <Part title="Approach" text={project.approach} />
           {project.resultsPublic ? <Part title="Results" text={project.results} /> : null}
+          {project.updates?.length ? (
+            <Section label="Progress">
+              {project.updates.map((update) => (
+                <View
+                  key={update.id}
+                  style={[styles.update, { borderColor: colors.line }]}>
+                  <Body style={styles.updateTitle}>{update.title}</Body>
+                  <Meta>
+                    {[date(update.postedAt), update.author?.name].filter(Boolean).join(' · ')}
+                  </Meta>
+                  <Prose text={update.body} />
+                  {update.nextUp?.trim() ? (
+                    <>
+                      <Label>What comes next</Label>
+                      <Prose text={update.nextUp} />
+                    </>
+                  ) : null}
+                </View>
+              ))}
+            </Section>
+          ) : null}
           {project.members?.length ? (
             <Section label="Team">
               {project.members.map((member) => (
@@ -78,3 +99,12 @@ function Part({ title, text }: { title: string; text: string | null }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  update: {
+    gap: Space.xs,
+    paddingVertical: Space.m,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  updateTitle: { fontFamily: Font.medium },
+});

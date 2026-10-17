@@ -9,6 +9,8 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
+  type TextInputProps,
   type TextProps,
   View,
 } from 'react-native';
@@ -49,9 +51,10 @@ export function Screen({
       style={{ flex: 1, backgroundColor: colors.ink }}
       contentContainerStyle={[
         styles.content,
-        { paddingTop: (top ? insets.top : 0) + Space.l },
+        { paddingTop: top ? insets.top + Space.s : Space.l },
       ]}
       contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets
       keyboardShouldPersistTaps="handled"
       refreshControl={
         load ? (
@@ -171,6 +174,64 @@ export function openLink(url: string): void {
   else void Linking.openURL(url);
 }
 
+/** The website's bordered button: lamplight edge for the main action, a hairline otherwise. */
+export function Button({
+  title,
+  onPress,
+  busy,
+  quiet,
+}: {
+  title: string;
+  onPress: () => void;
+  busy?: boolean;
+  quiet?: boolean;
+}) {
+  const colors = useColors();
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={busy}
+      accessibilityRole="button"
+      accessibilityState={{ busy: Boolean(busy), disabled: Boolean(busy) }}
+      style={({ pressed }) => [
+        styles.button,
+        { borderColor: quiet ? colors.line : colors.accent, opacity: pressed || busy ? 0.6 : 1 },
+      ]}>
+      {busy ? (
+        <ActivityIndicator color={colors.text} />
+      ) : (
+        <Text style={[styles.buttonText, { color: colors.text }]}>{title}</Text>
+      )}
+    </Pressable>
+  );
+}
+
+/** A labelled text field; the label is what VoiceOver reads. */
+export function Field({ label, ...props }: TextInputProps & { label: string }) {
+  const colors = useColors();
+  return (
+    <View style={{ gap: Space.xs }}>
+      <Label>{label}</Label>
+      <TextInput
+        accessibilityLabel={label}
+        placeholderTextColor={colors.muted}
+        {...props}
+        style={[styles.field, { color: colors.text, borderColor: colors.line }, props.style]}
+      />
+    </View>
+  );
+}
+
+/** A plain text link, for secondary actions. */
+export function TextLink({ title, onPress }: { title: string; onPress: () => void }) {
+  const colors = useColors();
+  return (
+    <Pressable onPress={onPress} accessibilityRole="link" hitSlop={8}>
+      <Text style={[styles.action, { color: colors.link }]}>{title}</Text>
+    </Pressable>
+  );
+}
+
 export function Empty({ children }: { children: ReactNode }) {
   return <Meta style={styles.empty}>{children}</Meta>;
 }
@@ -207,8 +268,8 @@ function flatten(block: string): string {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: Space.m, paddingBottom: Space.xl * 2, gap: Space.l },
-  title: { fontFamily: Font.display, fontSize: 38, lineHeight: 44 },
-  heading: { fontFamily: Font.display, fontSize: 26, lineHeight: 32 },
+  title: { fontFamily: Font.display, fontSize: 38, lineHeight: 51 },
+  heading: { fontFamily: Font.display, fontSize: 26, lineHeight: 35 },
   body: { fontFamily: Font.body, fontSize: 17, lineHeight: 26 },
   meta: { fontFamily: Font.body, fontSize: 14, lineHeight: 20 },
   label: {
@@ -229,4 +290,19 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: Space.m },
   note: { borderWidth: 1, padding: Space.m, gap: Space.s, marginTop: Space.l },
   action: { fontFamily: Font.medium, fontSize: 16 },
+  button: {
+    borderWidth: 1,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Space.l,
+  },
+  buttonText: { fontFamily: Font.medium, fontSize: 17 },
+  field: {
+    borderWidth: 1,
+    fontFamily: Font.body,
+    fontSize: 17,
+    minHeight: 48,
+    paddingHorizontal: Space.m,
+  },
 });

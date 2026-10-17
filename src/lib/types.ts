@@ -24,6 +24,17 @@ export type ProjectDetail = ProjectSummary & {
   links: { label: string; href: string }[];
   publications: PublicationSummary[];
   relatedProjects: ProjectSummary[];
+  /** Published progress updates, newest first. */
+  updates: ProjectUpdate[];
+};
+
+export type ProjectUpdate = {
+  id: string;
+  title: string;
+  body: string;
+  nextUp: string | null;
+  postedAt: string;
+  author: { name: string; memberSlug: string | null } | null;
 };
 
 export type PublicationSummary = Titled & {
@@ -122,6 +133,63 @@ export type InsightSummary = Titled & {
 
 export type InsightDetail = InsightSummary & { body: string };
 
+/** GET /auth/session and /me: who the token belongs to. */
+export type Viewer = {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  twoFactorEnabled: boolean;
+  member: {
+    id: string;
+    slug: string;
+    name: string;
+    rank: string;
+    status: string;
+    profileComplete: boolean;
+  } | null;
+  capabilities: string[];
+};
+
+export type MyProfile = {
+  slug: string;
+  name: string;
+  title: string | null;
+  bio: string | null;
+  interests: string[];
+  isPublic: boolean;
+};
+
+export type MyProject = {
+  id: string;
+  slug: string;
+  title: string;
+  gloss: string;
+  status: string;
+  state: string;
+  role: string | null;
+  isLead: boolean;
+};
+
+export type Announcement = {
+  id: string;
+  title: string;
+  body: string;
+  pinned: boolean;
+  createdAt: string;
+  author: Named | null;
+  read: boolean;
+};
+
+export type MyDocument = {
+  id: string;
+  title: string;
+  project: Titled;
+  createdAt: string;
+  url: string | null;
+  expiring: boolean;
+};
+
 export type SearchResult = {
   kind: string;
   title: string;
@@ -129,10 +197,23 @@ export type SearchResult = {
   href: string;
 };
 
+/** /home sends news without excerpts: just enough for a line on the home screen. */
+export type HomeNews = Titled & { category: string; date: string };
+
+/** A published update from a public project, its Markdown flattened to text. */
+export type HomeUpdate = {
+  id: string;
+  title: string;
+  summary: string;
+  postedAt: string;
+  project: Titled;
+};
+
 export type Home = {
   projects: ProjectSummary[];
   publications: PublicationSummary[];
-  news: NewsSummary[];
+  news: HomeNews[];
+  updates: HomeUpdate[];
   metrics: {
     researchers: number;
     projects: number;

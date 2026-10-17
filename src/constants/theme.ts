@@ -32,6 +32,12 @@ export function useColors(): Colors {
   return useColorScheme() === 'light' ? parchment : lapisNight;
 }
 
+/**
+ * Spectral reaches 1.34 em from its descenders to the top of an accented
+ * capital (1.14 em for capitals alone). iOS keeps a short line's descent and
+ * cuts its top, so display text needs a lineHeight of at least 1.34 ×
+ * fontSize or the first line loses the tops of its letters.
+ */
 export const Font = {
   display: 'Spectral_300Light',
   displayItalic: 'Spectral_300Light_Italic',

@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Font, Space, useColors } from '@/constants/theme';
+import { SITE_URL } from '@/lib/api';
 import type { ApiError } from '@/lib/envelope';
 
 type LoadState = {
@@ -85,7 +86,10 @@ function ErrorNote({ error, onRetry }: { error: ApiError; onRetry: () => void })
   return (
     <View style={[styles.note, { borderColor: colors.line }]}>
       <Body>{error.status === 404 ? 'This page is not available.' : error.message}</Body>
-      {error.status !== 404 ? (
+      {error.code === 'upgrade_required' ? (
+        // The site has stopped answering this version; retrying cannot help.
+        <TextLink title="Get the new version" onPress={() => openLink(`${SITE_URL}/app`)} />
+      ) : error.status !== 404 ? (
         <Pressable onPress={onRetry} accessibilityRole="button" hitSlop={8}>
           <Text style={[styles.action, { color: colors.link }]}>Try again</Text>
         </Pressable>

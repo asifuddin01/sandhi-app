@@ -22,7 +22,14 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": []
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "web": {
       "output": "single",
@@ -44,6 +51,12 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "owner": "sandhi-research-lab"
+    "owner": "sandhi-research-lab",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ff4ffb45-f2d3-4da2-9c5a-193e5427e554"
+      }
+    }
   }
 }
